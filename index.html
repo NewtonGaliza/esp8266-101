@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>ESP8266 - Intro</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+					<div align="right" valign="top">
+					<img src="images/RoboCore.png" width=280 height=100>
+					</div>
+
+				<section>
+                                	<img src="images/esp826601.jpeg" width=400 height=400>
+					<h3>ESP8266 101</br>(Introdução)</h3>
+				</section>
+
+				<section>
+					<h3>Oferecimento</h3>
+					<img src="images/robocore.jpg">
+				</section>
+
+				<section>
+
+				<section>
+					<h2>O que é o ESP8266?</h2>					
+				</section>
+
+				<section>
+					<img src="images/espchip.png" width=800 heigth=800>
+					<h1>É um chip</h1>
+				</section>
+
+				<section>
+					<p>O ESP8266, revolucionou o mundo maker, por ter baixo custo e a praticidade de incoporar 
+					conexão WIFI facilmente em projetos.
+				</section>
+
+				<section>
+					<p>O módulo WiFi ESP8266 é um SOC com protocolo TCP/IP integrado que consegue dar a qualquer microcontrolador acesso a sua rede WiFi. Cada módulo ESP8266 vem pré-programado com um comando AT setando seu firmware, significando que você pode simplesmente ligar este módulo ao seu Arduino e ele vai funcionar como qualquer outro shield WiFi funcionaria.</p>
+				</section>
+
+				<section>
+					<p>Esse módulo possui um processador na placa poderoso o suficiente para ser capaz de integração com sensores e outras aplicações específicas usando seus GPIOs. O ESP866 suporta APSD para aplicações VOIP e interface com bluetooth pré-existente, ele possui RF auto-calibrável permitindo que ele trabalhe em todas as condições de operação, e não requer nenhuma parte RF externa.</p>
+				</section>
+			
+				<section>
+					<h3>Modelos do ESP8266</h3>
+					<img src="images/modelos.png" width=800 height=550>
+				</section>
+
+				<section>
+					<h3>Pinagem no ESP-01</h3>
+					<img src="images/pinagemesp01.jpg">
+				</section>
+
+				<section>
+					<h2>ATENÇÃO</h2>
+					<p>O ESP8266 não é capaz de fazer alterações em nível lógico de 5V para 3,3V, e vice-versa. É recomendado o uso de um Conversor de Nível Lógico junto ao módulo.</p>
+					<p>Por causa da disposição dos seus pinos o ESP-01, não pode ser plugado na protoboard, pois seus pinos causam curto.</p>
+				</section>		
+				
+				<section>
+					<h3>Conversor de nível lógico</h3>
+					<img src="images/conversorlogico.png"  width=800 height=550>
+				</section>		
+			
+				<section>
+					<h3>Adaptador</h3>
+					<img src="images/adaptador.png" width=450 height=300>
+					<img src="images/espadaptado.png" width=450 height=300>
+					<a href="https://www.robocore.net/loja/produtos/adaptador-para-esp8266.html" target="_blank">
+					Adquira o seu
+					</a>
+				</section>	
+
+				<section>
+					<h3>Primeiros passos</h3>
+					<img src="images/arduinoesp.png" width=800 height=550>
+				</section>
+				
+				<section>
+					<script src="https://gist.github.com/NewtonGaliza/3a46dfed6943bd5bca2bf1dbab87f396.js"></script>
+				</section>
+
+				<section>
+					<img src="images/monitor-serial1.png" width=500 height=450>
+					<p>Certifique-se que a velocidade de comunicação do monitor serial está em 9600 bps e a terminação do comando está como "both NL & CR"</p>
+				</section>
+					
+
+				<section>
+					<h2>Comandos AT</h2>
+					<p>Vamos usar o comando <b>AT+CWLAP</b></p>(List Acess Points), para obter uma lista com redes WIFI próximas</p>	
+					<p>Recebemos uma mensagem de erro, por padrão o ESP8266 (versão da RoboCore), sai por padrão no modo 2 de funcionamento (Acess Point). Vamos mudar para o modo 1 (estação) com o comando <b>AT+CWMODE=1</b>, e repetir o comando de listagem.</p>
+				</section>				
+
+				<section>
+					<img src="images/monitor-serial3.png" width=650 height=500>
+					<p>+CWLAP(tipo de criptografia, SSID, Received Signal Strength Indication(RSSI))
+				</section>
+			
+				<section>
+					<h2>Conectando na Rede</h2>
+					<pre><code>
+#include "SoftwareSerial.h"
+
+SoftwareSerial ESP_Serial(10, 11); // RX, TX
+
+String rede = "SUA-REDE-WIFI-AQUI"; 
+String senha = "SUA-SENHA-AQUI";
+String resposta = "";
+
+void setup() {
+  Serial.begin(9600);
+  ESP_Serial.begin(9600);
+
+  Serial.println("Inicializando...");
+  delay(1000);
+
+  Serial.println("Chamando atencao do modulo com AT...");
+  sendCommand("AT");
+  readResponse(1000);
+
+  Serial.println("Mudando o modo com CWMODE=1...");
+  sendCommand("AT+CWMODE=1");
+  readResponse(1000);
+
+  Serial.println("Conectando a rede...");
+  String CWJAP = "\"AT+CWJAP=\"";
+  CWJAP += rede;
+  CWJAP += "\",\"";
+  CWJAP += senha;
+  CWJAP += "\"";
+  sendCommand(CWJAP);
+  readResponse(10000);
+
+  delay(2000); //espera de seguranca
+
+  if (resposta.indexOf("OK") == -1) { //procura na resposta se houve OK
+    Serial.println("Atencao: Nao foi possivel conectar a rede WiFi.");
+    Serial.println("Verifique se o nome da rede e senha foram preenchidos corretamente no codigo e tente novamente.");
+  } else {
+    Serial.println("Sucesso! Conectado a rede WiFi.");
+  }
+}
+
+void loop() {
+}
+
+void sendCommand(String cmd) {
+  ESP_Serial.println(cmd);
+}
+
+void readResponse(unsigned int timeout) {
+  unsigned long timeIn = millis(); //momento que entramos nessa funcao é salvo
+  resposta = "";
+  //cada comando AT tem um tempo de resposta diferente...
+  while (timeIn + timeout > millis()) {
+    if (ESP_Serial.available()) {
+      char c = ESP_Serial.read();
+      resposta += c;
+    }
+  }
+  Serial.println(resposta);
+}
+					</code></pre>
+					<a href="https://github.com/NewtonGaliza/ConnectESP8266" target="_blank">GitHub code</a>
+				</section>
+
+				<section>
+					<img src="images/conectado.png" width=900 height=700>
+				</section>
+
+
+				<section>
+					<h3>Perguntas</h3>
+					<img src='images/question.png' width=200>
+					<p>newtonjgaliza@gmail.com</p>
+					<p>github.com/newtongaliza</p>
+					<br/>
+					<h3>print('Muito Obrigado')</h3>
+				</section>
+
+				<section>
+					<img src="images/continued.png">
+				</section>
+				
+
+
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
